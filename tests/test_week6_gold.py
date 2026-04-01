@@ -28,52 +28,98 @@ def _run_cell(spark, pattern):
 # ===========================================================================
 
 def test_dim_customer_from_silver(spark):
-    # TODO: Implement this test
-    pass
+    _run_cell(spark, "gold_dim_customer_merge")
+    emails = {r.email for r in spark.sql("SELECT email FROM gold.dim_customer").collect()}
+    # TODO: assert that 'alice@example.com' and 'bob@example.com' are in `emails`
+
 
 def test_dim_customer_sentinel(spark):
-    # TODO: Implement this test
-    pass
+    _run_cell(spark, "gold_dim_customer_merge")
+    _run_cell(spark, "gold_dim_customer_sentinel")
+    name = spark.sql(
+        "SELECT name FROM gold.dim_customer WHERE email = 'in-store'"
+    ).collect()[0].name
+    # TODO: assert that name equals 'In-Store Customer'
+
 
 # ---------------------------------------------------------------------------
 # Tests — gold.dim_store
 # ---------------------------------------------------------------------------
 
 def test_dim_store_from_silver(spark):
-    # TODO: Implement this test
-    pass
+    _run_cell(spark, "gold_dim_store_merge")
+    store_nbrs = {r.store_nbr for r in spark.sql("SELECT store_nbr FROM gold.dim_store").collect()}
+    # TODO: assert that 'S001' is in `store_nbrs`
+
 
 def test_dim_store_sentinel(spark):
-    # TODO: Implement this test
-    pass
+    _run_cell(spark, "gold_dim_store_merge")
+    _run_cell(spark, "gold_dim_store_sentinel")
+    name = spark.sql(
+        "SELECT name FROM gold.dim_store WHERE store_nbr = 'online'"
+    ).collect()[0].name
+    # TODO: assert that name equals 'Online'
+
 
 # ---------------------------------------------------------------------------
 # Tests — gold.dim_book (hierarchy flattening)
 # ---------------------------------------------------------------------------
 
 def test_dim_book_flattens_hierarchy(spark):
-    # TODO: Implement this test
-    pass
+    _run_cell(spark, "gold_dim_book_merge")
+    book = spark.sql("SELECT subgenre, genre, category FROM gold.dim_book").collect()[0]
+    # TODO: assert that book.subgenre, book.genre, and book.category are correctly flattened:
+    # subgenre = 'Space Opera', genre = 'Science Fiction', category = 'Fiction'
+
 
 # ---------------------------------------------------------------------------
 # Tests — gold.fact_sales
 # ---------------------------------------------------------------------------
 
 def test_fact_sales_all_items_present(spark):
-    # TODO: Implement this test
-    pass
+    _run_cell(spark, "gold_fact_sales_merge")
+    order_ids = {r.order_id for r in spark.sql("SELECT order_id FROM gold.fact_sales").collect()}
+    ins_002_count = spark.sql(
+        "SELECT COUNT(*) AS cnt FROM gold.fact_sales WHERE order_id = 'INS-002'"
+    ).collect()[0].cnt
+    # TODO: assert ONL-001, ONL-002, INS-001 are in order_ids, and ins_002_count equals 2
+    # (INS-002 had 2 line items, so it should produce 2 fact rows)
+
 
 def test_fact_sales_line_total(spark):
-    # TODO: Implement this test
-    pass
+    _run_cell(spark, "gold_fact_sales_merge")
+    mismatches = spark.sql("""
+        SELECT * FROM gold.fact_sales
+        WHERE line_total != quantity * unit_price
+    """).collect()
+    # TODO: assert that mismatches is empty (line_total should equal quantity * unit_price for every row)
+
 
 def test_fact_sales_fk_lookups(spark):
-    # TODO: Implement this test
-    pass
+    _run_cell(spark, "gold_fact_sales_merge")
+    nulls = spark.sql("""
+        SELECT
+            SUM(CASE WHEN customer_id IS NULL THEN 1 ELSE 0 END) AS null_cust,
+            SUM(CASE WHEN book_id IS NULL THEN 1 ELSE 0 END) AS null_book,
+            SUM(CASE WHEN date_id IS NULL THEN 1 ELSE 0 END) AS null_date,
+            SUM(CASE WHEN store_id IS NULL THEN 1 ELSE 0 END) AS null_store
+        FROM gold.fact_sales
+    """).collect()[0]
+    # TODO: assert that nulls.null_cust, null_book, null_date, and null_store are all 0
+    # (every fact row should resolve to a valid dimension surrogate key)
+
 
 def test_fact_sales_degenerate_dims(spark):
-    # TODO: Implement this test
-    pass
+    _run_cell(spark, "gold_fact_sales_merge")
+    rows = spark.sql("""
+        SELECT order_id, order_channel, isbn, payment_method
+        FROM gold.fact_sales
+        ORDER BY order_id, isbn
+    """).collect()
+    order_ids = {r.order_id for r in rows}
+    channels = {r.order_channel for r in rows}
+    # TODO: assert expected order IDs are present, channels contains {'online', 'in-store'},
+    # and every row has a non-null payment_method
 
 
 # ===========================================================================

@@ -33,33 +33,44 @@ def _run_cell(spark, pattern):
 
 def test_valid_email_filter(spark):
     """Verify that email filter only returns valid email formats."""
-    # TODO: Implement this test
-    pass
+    rows = _run_cell(spark, "valid_email_filter").collect()
+    emails = [r.email for r in rows]
+    # TODO: assert the correct number of employees are returned and every email contains '@'
+
 
 def test_count_employees(spark):
     """Verify that employee count query returns correct count."""
-    # TODO: Implement this test
-    pass
+    row = _run_cell(spark, "count_employees").collect()[0]
+    # TODO: assert row.total_employees equals the expected total number of employees
+
 
 def test_employees_in_salary_range(spark):
     """Verify that salary range filter returns correct employees."""
-    # TODO: Implement this test
-    pass
+    rows = _run_cell(spark, "employees_in_salary_range").collect()
+    salaries = [row.salary for row in rows]
+    # TODO: assert the correct number of employees are returned, all salaries are between 50000 and 100000,
+    # and results are in ascending salary order
+
 
 def test_recent_hires(spark):
     """Verify that recent hires query filters by date correctly."""
-    # TODO: Implement this test
-    pass
+    rows = _run_cell(spark, "recent_hires").collect()
+    # TODO: assert the correct number of recent hires are returned and check which employee_id appears
+
 
 def test_average_salary_by_department(spark):
     """Verify that average salary by department is calculated correctly."""
-    # TODO: Implement this test
-    pass
+    rows = _run_cell(spark, "average_salary_by_department").collect()
+    dept_avgs = {row.department: row.avg_salary for row in rows}
+    # TODO: assert the correct number of departments are returned, check specific avg_salary values
+    # (hint: Engineering avg = 102500, Sales avg = 70000), and verify results are ordered descending by avg_salary
+
 
 def test_employees_with_valid_email(spark):
     """Verify that email filter excludes NULL and empty emails."""
-    # TODO: Implement this test
-    pass
+    rows = _run_cell(spark, "employees_with_valid_email").collect()
+    # TODO: assert the correct number of rows are returned and all emails are non-null and non-empty string
+
 
 # ---------------------------------------------------------------------------
 # Additional validation tests
@@ -67,18 +78,23 @@ def test_employees_with_valid_email(spark):
 
 def test_email_filter_returns_expected_columns(spark):
     """Verify that email filter query returns the expected columns."""
-    # TODO: Implement this test
-    pass
+    cols = _run_cell(spark, "valid_email_filter").columns
+    # TODO: assert that all expected columns are present:
+    # employee_id, name, email, department, salary, hire_date
+
 
 def test_salary_range_filter_ordering(spark):
     """Verify that salary range query results are ordered by salary."""
-    # TODO: Implement this test
-    pass
+    rows = _run_cell(spark, "employees_in_salary_range").collect()
+    salaries = [row.salary for row in rows]
+    # TODO: assert that each salary is <= the next one (ascending order)
+
 
 def test_recent_hires_sorting(spark):
     """Verify that recent hires are sorted by hire date descending."""
-    # TODO: Implement this test
-    pass
+    rows = _run_cell(spark, "recent_hires").collect()
+    hire_dates = [row.hire_date for row in rows]
+    # TODO: if more than one row is returned, assert hire_dates are in descending order
 
 
 # ===========================================================================
