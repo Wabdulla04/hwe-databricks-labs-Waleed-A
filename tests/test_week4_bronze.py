@@ -1,8 +1,6 @@
 """Tests for Week 4 — Bronze layer ingestion."""
 
 import os
-from decimal import Decimal
-
 import pytest
 
 from tests.notebook_utils import find_cell
@@ -114,13 +112,13 @@ def test_merge_updates_existing_rows(spark):
     """Verify that MERGE UPDATE clause works when row already exists."""
     _run_cell(spark, "bronze_online_orders_merge")
 
-    # Replace the source view with an updated version of ONL-001 (total_amount changed to 99.99)
+    # Replace the source view with an updated version of ONL-001 (email changed)
     spark.sql("""
         CREATE OR REPLACE TEMPORARY VIEW online_orders_raw AS
         SELECT
             'ONL-001' AS order_id,
             CAST('2025-06-15 10:00:00' AS TIMESTAMP) AS order_timestamp,
-            'alice@example.com' AS customer_email,
+            'alice_updated_email@example.com' AS customer_email,
             'Alice Smith' AS customer_name,
             '123 Elm St' AS customer_address,
             'Springfield' AS customer_city,
@@ -135,8 +133,7 @@ def test_merge_updates_existing_rows(spark):
 
     _run_cell(spark, "bronze_online_orders_merge")
     rows = spark.sql("SELECT * FROM bronze.online_orders").collect()
-    # rows is a list of Row objects; rows[0].total_amount is a Decimal
-    # TODO: assert that len(rows) is 1 (MERGE updated, not inserted) and rows[0].total_amount equals Decimal("99.99")
+    # TODO: assert that len(rows) equals 1 (MERGE updated, not inserted) and rows[0].customer_email equals 'alice_updated_email@example.com'
 
 
 # ===========================================================================
