@@ -78,13 +78,6 @@ def test_merge_is_idempotent(spark):
 # Additional tests — data quality and schema validation
 # ---------------------------------------------------------------------------
 
-def test_stores_has_audit_columns(spark):
-    _run_cell(spark, "bronze_stores_load")
-    cols = spark.sql("SELECT * FROM bronze.stores").columns
-    # cols is a list of strings
-    # TODO: assert that 'ingestion_timestamp' and 'source_filename' are both in cols
-
-
 def test_categories_hierarchy_preserved(spark):
     _run_cell(spark, "bronze_categories_load")
     rows = spark.sql("""
@@ -100,14 +93,6 @@ def test_categories_hierarchy_preserved(spark):
     # fiction (top-level) should have empty string, sci_fi should reference fiction, space_opera should reference sci_fi
 
 
-def test_online_orders_decimal_precision(spark):
-    _run_cell(spark, "bronze_online_orders_merge")
-    schema = spark.sql("SELECT * FROM bronze.online_orders").schema
-    total_amount_field = [f for f in schema.fields if f.name == "total_amount"][0]
-    # total_amount_field is a StructField; str(total_amount_field.dataType) is a string
-    # TODO: assert that "DecimalType" is in str(total_amount_field.dataType)
-
-
 def test_instore_orders_nullable_email(spark):
     _run_cell(spark, "bronze_instore_orders_merge")
     customer_email = spark.sql("SELECT customer_email FROM bronze.instore_orders").collect()[0].customer_email
@@ -117,10 +102,9 @@ def test_instore_orders_nullable_email(spark):
 
 def test_instore_orders_has_cashier_name(spark):
     _run_cell(spark, "bronze_instore_orders_merge")
-    cols = spark.sql("SELECT * FROM bronze.instore_orders").columns
     cashier_name = spark.sql("SELECT cashier_name FROM bronze.instore_orders").collect()[0].cashier_name
-    # cols is a list of strings; cashier_name is a string
-    # TODO: assert that 'cashier_name' is in cols and cashier_name equals the expected value
+    # cashier_name is a string
+    # TODO: assert that cashier_name equals the expected value
 
 
 def test_books_preserves_category_reference(spark):

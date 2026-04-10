@@ -65,10 +65,8 @@ def _run_silver_order_items(spark):
 def test_stores_merge(spark):
     _run_silver_stores(spark)
     row = spark.sql("SELECT store_nbr, name FROM silver.stores WHERE store_nbr = 'S001'").collect()
-    col_names = spark.sql("SELECT * FROM silver.stores").columns
-    # row is a list of Row objects; row[0].name is a string; col_names is a list of strings
-    # TODO: assert that exactly one row exists for S001 with name 'Downtown Books',
-    # and that 'ingestion_timestamp' and 'source_filename' are NOT in col_names
+    # row is a list of Row objects; row[0].name is a string
+    # TODO: assert that exactly one row exists for S001 with name 'Downtown Books'
 
 
 # ---------------------------------------------------------------------------
@@ -172,21 +170,6 @@ def test_order_items_exploded(spark):
     # order_ids is a Python set of strings; ins_002_count is an integer
     # TODO: assert ONL-001 and INS-001 are in order_ids, and ins_002_count equals 2
     # (INS-002 had 2 items in its JSON array, so it should explode into 2 rows)
-
-
-def test_order_items_drops_title(spark):
-    _run_silver_order_items(spark)
-    cols = spark.sql("SELECT * FROM silver.order_items").columns
-    # cols is a list of strings
-    # TODO: assert that 'title' is not in cols (title is redundant with silver.books and should be dropped)
-
-
-def test_order_items_decimal_cast(spark):
-    _run_silver_order_items(spark)
-    schema = spark.sql("SELECT * FROM silver.order_items").schema
-    unit_price_field = [f for f in schema.fields if f.name == "unit_price"][0]
-    # unit_price_field is a StructField; str(unit_price_field.dataType) is a string
-    # TODO: assert that "DecimalType" is in str(unit_price_field.dataType)
 
 
 # ===========================================================================
