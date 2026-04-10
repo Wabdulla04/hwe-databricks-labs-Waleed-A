@@ -136,11 +136,11 @@ def test_orders_unified(spark):
 
 def test_orders_online_sentinel(spark):
     _run_silver_orders(spark)
-    store_nbrs = [r.store_nbr for r in spark.sql(
-        "SELECT store_nbr FROM silver.orders WHERE order_channel = 'online'"
-    ).collect()]
-    # store_nbrs is a list of strings
-    # TODO: assert that all store_nbrs for online orders equal 'online'
+    wrong_store = spark.sql("""
+        SELECT COUNT(*) AS cnt FROM silver.orders
+        WHERE order_channel = 'online' AND store_nbr != 'online'
+    """).collect()[0].cnt
+    # TODO: assert wrong_store equals 0
 
 
 def test_orders_instore_null_email_sentinel(spark):

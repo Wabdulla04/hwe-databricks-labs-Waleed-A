@@ -118,16 +118,14 @@ def test_fact_sales_fk_lookups(spark):
 
 def test_fact_sales_degenerate_dims(spark):
     _run_cell(spark, "gold_fact_sales_merge")
-    rows = spark.sql("""
-        SELECT order_id, order_channel, isbn, payment_method
-        FROM gold.fact_sales
-        ORDER BY order_id, isbn
-    """).collect()
-    order_ids = {r.order_id for r in rows}
-    channels = {r.order_channel for r in rows}
-    # order_ids and channels are Python sets of strings; rows is a list of Row objects
-    # TODO: assert expected order IDs are present, channels contains {'online', 'in-store'},
-    # and every row has a non-null payment_method
+    order_ids = {r.order_id for r in spark.sql("SELECT order_id FROM gold.fact_sales").collect()}
+    channels = {r.order_channel for r in spark.sql("SELECT order_channel FROM gold.fact_sales").collect()}
+    null_payment = spark.sql("""
+        SELECT COUNT(*) AS cnt FROM gold.fact_sales WHERE payment_method IS NULL
+    """).collect()[0].cnt
+    # order_ids and channels are Python sets; null_payment is an integer
+    # TODO: assert order_ids equals the expected set of order IDs, channels equals {'online', 'in-store'},
+    # and null_payment equals 0
 
 
 # ===========================================================================
