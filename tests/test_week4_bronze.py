@@ -83,8 +83,8 @@ def test_categories_hierarchy_preserved(spark):
     # TODO: assert the correct parent_category_id for each:
     # fiction (top-level) should have empty string, sci_fi should reference fiction, space_opera should reference sci_fi
     assert fiction.parent_category_id == '' 
-    assert sci_fi.parent_category_id == "fiction"
-    assert space_opera.parent_category_id == "sci_fi"
+    assert sci_fi.parent_category_id == '1'
+    assert space_opera.parent_category_id == '3'
 
 
 def test_instore_orders_nullable_email(spark):
